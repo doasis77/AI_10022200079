@@ -139,4 +139,4 @@ pytest -q
 
 ---
 
-*Replace [YOUR_NAME] and [YOUR_INDEX] in this README and in code comments marked for the exam.*
+
