@@ -69,6 +69,7 @@ st.set_page_config(
 st.markdown(
     """
     <style>
+    .block-container { padding-top: 1.1rem; }
     .app-shell {
         border: 1px solid #20263a;
         border-radius: 14px;
@@ -138,6 +139,30 @@ st.markdown(
         border-color: #7ea0ff;
         box-shadow: 0 0 0 0.1rem rgba(110, 151, 255, 0.18);
     }
+    .section-kicker {
+        color: #8ea0cf;
+        font-size: 0.8rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        margin: 0.1rem 0 0.35rem;
+    }
+    .answer-card {
+        border: 1px solid #24423b;
+        background: linear-gradient(180deg, #0f1e1a 0%, #0d1916 100%);
+        border-radius: 12px;
+        padding: 0.8rem 0.9rem;
+        margin-bottom: 0.55rem;
+    }
+    .answer-title {
+        color: #baf7d7;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+    }
+    .result-meta {
+        color: #9fb0d8;
+        font-size: 0.86rem;
+        margin-bottom: 0.45rem;
+    }
     </style>
     """,
     unsafe_allow_html=True,
@@ -164,22 +189,25 @@ st.markdown(
 # ── Sidebar settings ──────────────────────────────────────────────────────────
 with st.sidebar:
     st.header("⚙️ Settings")
-    top_k = st.slider("Top-K chunks to retrieve", min_value=1, max_value=8, value=4)
-    prompt_version = st.selectbox(
-        "Prompt version",
-        options=["v3", "v2", "v1"],
-        index=0,
-        help="v1=basic, v2=hallucination-controlled, v3=structured (recommended)"
-    )
-    chunking_method = st.selectbox(
-        "PDF Chunking method",
-        options=["paragraph_aware", "fixed_size"],
-        index=0
-    )
-    compare_pure_llm = st.checkbox("Compare with pure LLM (no retrieval)", value=False)
-    st.markdown("---")
-    show_debug = st.checkbox("Show debug panel", value=False)
-    run_eval_btn = st.button("🧪 Run Evaluation Suite")
+    st.caption("Tune retrieval, prompting, and analysis controls.")
+    with st.expander("Retrieval", expanded=True):
+        top_k = st.slider("Top-K chunks to retrieve", min_value=1, max_value=8, value=4)
+        chunking_method = st.selectbox(
+            "PDF chunking method",
+            options=["paragraph_aware", "fixed_size"],
+            index=0
+        )
+    with st.expander("Generation", expanded=True):
+        prompt_version = st.selectbox(
+            "Prompt version",
+            options=["v3", "v2", "v1"],
+            index=0,
+            help="v1=basic, v2=hallucination-controlled, v3=structured (recommended)"
+        )
+        compare_pure_llm = st.checkbox("Compare with pure LLM (no retrieval)", value=False)
+    with st.expander("Diagnostics", expanded=False):
+        show_debug = st.checkbox("Show debug panel", value=False)
+        run_eval_btn = st.button("🧪 Run Evaluation Suite", use_container_width=True)
 
 
 # ── System initialisation (cached) ────────────────────────────────────────────
@@ -314,11 +342,29 @@ else:
         st.session_state.last_compare_pure = False
 
     # Keep final answer pinned at the top when available.
+    action_left, action_right = st.columns([8, 2])
+    with action_left:
+        st.markdown('<div class="section-kicker">Conversation</div>', unsafe_allow_html=True)
+    with action_right:
+        if st.button("Clear answer", use_container_width=True):
+            st.session_state.last_result = None
+            st.session_state.query_input = ""
+            st.rerun()
+
     if st.session_state.last_result:
         r = st.session_state.last_result
-        st.subheader("🤖 Final Answer")
+        st.markdown(
+            """
+            <div class="answer-card">
+              <div class="answer-title">Final Answer</div>
+              <div class="result-meta">Grounded using retrieved context and current prompt settings.</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
         st.success(r["response"])
         if st.session_state.last_compare_pure and r.get("pure_llm_response"):
+            st.markdown('<div class="section-kicker">Baseline Comparison</div>', unsafe_allow_html=True)
             st.subheader("🔄 Pure LLM Response (no retrieval)")
             st.info(r["pure_llm_response"])
             st.caption(
@@ -369,11 +415,16 @@ else:
         st.text_input(
             "Ask your question",
             key="query_input",
-            placeholder="e.g. How many seats did the NDC win in parliament?",
+            placeholder="Type a grounded question and press Enter...",
             label_visibility="collapsed",
         )
     with send_col:
-        submit = st.button("Send", type="primary", use_container_width=True)
+        submit = st.button(
+            "Send",
+            type="primary",
+            use_container_width=True,
+            disabled=not st.session_state.query_input.strip()
+        )
 
     query = st.session_state.query_input.strip()
     if submit and query:
@@ -396,6 +447,9 @@ else:
             st.markdown(
                 f"**Query type detected:** `{r['query_type']}` | "
                 f"**Prompt version:** `{st.session_state.last_prompt_version}`"
+            )
+            st.caption(
+                f"Retrieved {len(r['retrieved'])} candidates and selected {len(r['selected'])} chunks for final context."
             )
             st.subheader("📄 Retrieved Chunks & Scores")
             for i, (chunk, scores) in enumerate(r["selected"]):
@@ -489,4 +543,7 @@ if st.session_state.started:
             st.info("No queries logged yet.")
 
 st.markdown("---")
-st.caption("CS4241 Introduction to Artificial Intelligence | Academic City University | [Your Name] | [Index Number]")
+st.caption(
+    "CS4241 Introduction to Artificial Intelligence | Academic City University | "
+    "Amegah Sewenam Kwame Bill | 10022200079"
+)
