@@ -1,0 +1,12 @@
+.env
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+outputs/logs.json
+outputs/chunks.json
+outputs/evaluation_results.json
+.streamlit/
+*.egg-info/
+dist/
+build/
