@@ -1,5 +1,5 @@
 # app.py
-# Author: Amegah Sewenam Kwame Bill Index: 10022200079
+# Author: Amegah Sewenam Kwame Bill | Index: 10022200079
 # Academic City RAG Chatbot — CS4241 Exam Project
 # Streamlit application entry point
 
