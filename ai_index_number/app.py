@@ -489,4 +489,4 @@ if st.session_state.started:
             st.info("No queries logged yet.")
 
 st.markdown("---")
-st.caption("CS4241 Introduction to Artificial Intelligence | Academic City University | [Your Name] | [Index Number]")
+st.caption("CS4241 Introduction to Artificial Intelligence | Academic City University | Amegah Sewenam Kwame Bill | 10022200079")
